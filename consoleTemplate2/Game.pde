@@ -14,6 +14,7 @@ class Game {
   void gameDraw() {
     hmVar.put("fpsDraw", (float)(int)(float)(1000000000/(System.nanoTime()-lastMsDraw)));
     lastMsDraw = System.nanoTime();
+    
     bench.s("gameDraw");
     clear();
     background(100);

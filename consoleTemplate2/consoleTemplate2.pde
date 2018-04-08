@@ -11,6 +11,10 @@ Console console;
 BenchTool bench;
 GraphLog[] graphs;
 
+float FPSengine = 60, FPSdraw = 144;
+
+boolean gameRunning = false;
+
 void settings() {
   size(iWidth, iHeight, P3D);
 }
@@ -24,20 +28,41 @@ void setup() {
   initFuncHash();
   hmVar.put("float1", 50.0);
   hmVar.put("float2", 50.0);
+  surface.setLocation(displayWidth/2-width/2, displayHeight/2-height/2);
+  gameRunning = true;
+  thread("gameThread");
+  vSync(1);
 }
 
-long nextFrameNano = System.nanoTime(), measuredGameFPS;
-long nanoWait = (long)((double)(1/60.0) * 1000000000.0);
+void vSync(int on) {
+  PJOGL pgl = (PJOGL)beginPGL();
+  pgl.gl.setSwapInterval(on);
+  endPGL();
+}
+
+long nextFrameNano = System.nanoTime(), 
+  nextDrawFrameNano = System.nanoTime(), measuredGameFPS;
+long nanoWaitEngine = (long)((double)(1/FPSengine) * 1000000000.0), 
+  nanoWaitDraw = (long)((double)(1/FPSdraw) * 1000000000.0);
 long lastMs =  System.nanoTime();
+
+void gameThread() {
+  long nextFrameNano = System.nanoTime();
+  while (gameRunning) {
+    if (System.nanoTime() > nextFrameNano) {
+      nextFrameNano += nanoWaitEngine;
+      game.gameFrame();
+    }
+  }
+}
+
+
 void draw() {
-  if (System.nanoTime() > nextFrameNano) {
-    nextFrameNano += nanoWait;
-    game.gameFrame();
+ // if (System.nanoTime() > nextDrawFrameNano) {
+    nextDrawFrameNano += nanoWaitDraw;
     game.gameDraw();
     utilities();
-  }
-  while (System.nanoTime() < nextFrameNano) {
-  }
+//  }
 }
 
 void utilities() {
